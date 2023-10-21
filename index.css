@@ -1,0 +1,67 @@
+html,
+body {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  margin: 0;
+  background: linear-gradient(135deg, #fab30c, #4f07d5);
+}
+
+p {
+  margin: 0;
+}
+
+#wrapper {
+}
+
+#indicator {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.indicator-button {
+  margin-right: 20px;
+  padding: 10px 16px;
+  border-radius: 5px;
+  background-color: #000220;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.indicator-button:disabled {
+  color: #757575;
+}
+
+.indicator-text {
+  font-size: 20px;
+  color: white;
+  font-weight: bold;
+  line-height: 1.5;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-gap: 20px;
+  width: fit-content;
+  height: fit-content;
+  padding: 20px;
+  border-radius: 8px;
+  background: linear-gradient(-45deg, #fab30c, #4f07d5);
+  box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+}
+
+.card {
+  width: 120px;
+  height: 120px;
+  background-color: #000220;
+  border-radius: 5px;
+  cursor: pointer;
+}
