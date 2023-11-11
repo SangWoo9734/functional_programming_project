@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="./index.css" rel="stylesheet" />
-    <script src="./main.js" defer></script>
+    <script type="module" src="./main.js" defer></script>
     <title>Card Game</title>
   </head>
   <body>
@@ -13,27 +13,10 @@
         <button class="indicator-button">Start</button>
         <div class="indicator-text">
           <p>0 moves</p>
-          <p>time: 0 secs</p>
+          <p id="game-timer">time: 0 secs</p>
         </div>
       </div>
-      <div id="board">
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-      </div>
+      <ul id="board"></ul>
     </div>
   </body>
 </html>
