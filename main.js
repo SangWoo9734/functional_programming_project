@@ -2,49 +2,38 @@
 
 import { GAME_DURATION_SEC } from "./constatns.js";
 
-// 11/18 -> 카드 뒤집기 로직 테스트 실패 , shuffleCard 객치 배열 구조 만들기부터
+// ----- 추가 기능 -----
+// 난이도
+// 음악
+// 게임 끝 모달 UI
+
+// TODO:
+// 4. 게임 끝 ( alert )
+// 5. 게임 리셋
 
 const CARDS_TYPE = ["🍑", "🍎", "🥝", "🍋", "🍊", "🍌", "🍉", "🍇"];
 
-[
-  {
-    emoji: "🍑",
-    status: false, //
-    id: "", // 몇번 째 카드인건지 index +1
-  },
-  "🍎",
-  "🥝",
-  "🍋",
-  "🍊",
-  "🍌",
-  "🍉",
-  "🍇",
-  "🍑",
-  "🍎",
-  "🥝",
-  "🍋",
-  "🍊",
-  "🍌",
-  "🍉",
-  "🍇",
-];
-
 // querySelector
 const startbutton = document.querySelector(".indicator-button");
+const gameMoveCount = document.querySelector("#move-counter");
 const gameTimerText = document.querySelector("#game-timer");
 
 // global variable
 let started = false;
-let score = 0;
+let moveCount = 0;
 let card_1 = null;
 let card_2 = null;
-let shuffledCards = []; //TODO: 이거 해야 함!
+let shuffledCards = [];
 
 const cardShuffle = (cardList) => {
-  const cardCopy = [...cardList, ...cardList];
+  const cardCopy = [...cardList, ...cardList].map((emoji, index) =>
+    makeCard(emoji, index)
+  );
 
-  for (let index = cardCopy.length - 1; index > 0; index--) {
-    const randomIndex = Math.floor(Math.random() * (index + 1));
+  console.log(cardCopy); // TODO:지우지 말 것..!
+
+  for (let index = cardCopy.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index - 1));
 
     const temp = cardCopy[index];
     cardCopy[index] = cardCopy[randomIndex];
@@ -54,9 +43,17 @@ const cardShuffle = (cardList) => {
   return cardCopy;
 };
 
-const makeCard = (cardNumber, emoji) => {
+const makeCard = (emoji, index) => {
+  return {
+    emoji,
+    isOpened: false,
+    id: `card-${index + 1}`,
+  };
+};
+
+const renderCard = (cardId, emoji) => {
   return `
-    <li id=card-${cardNumber} class="card">
+    <li id=${cardId} class="card">
       <div class="front"></div>
       <div class="back">
         <p>${emoji}</p>
@@ -65,46 +62,45 @@ const makeCard = (cardNumber, emoji) => {
   `;
 };
 
-// 카드 이벤트 할당
 const injectCardEvent = (shuffledCards) => {
-  // 여기서 클릭한 카드의 status를 find 메서드로 검색 ->
   const cards = document.querySelectorAll(".card");
-
-  // 이미 클릭한 카드(같은 카드)를 다시 클릭하면 무효
-  // 이미 맞춘 카드를 클릭하면 X
 
   cards.forEach((card) => {
     card.addEventListener("click", (e) => {
-      console.log(e.currentTarget);
-      reverseCard(card.id);
-      // 함수 하나 추가 click한 카드의 Status가 true인지 확인하는 함수
-      /**
-       * if(isAlreadyCorrectCard()) {
-       *   return;
-       * }
-       */
-      // card_1 || card_2의 status가 ㅅㄱ
-      // card_1 ===  card_2 건
+      if (!started) {
+        return;
+      }
 
       if (checkCardCanReverse(card)) {
+        reverseCard(card.id);
+
         if (card_1 === null) {
           card_1 = card;
           return;
         }
-        card_2 = card;
-      }
 
-      checkCardIsSame(card_1, card_2);
+        if (card_1) {
+          card_2 = card;
+          checkCardIsSame(card_1, card_2);
+          updateMoveCount();
+          updateMoveCountText(moveCount);
+        }
+      }
     });
   });
 };
 
+const resetSelectedCards = () => {
+  card_1 = null;
+  card_2 = null;
+};
+
 const initCard = () => {
-  shuffledCards = cardShuffle(CARDS_TYPE); // here
+  shuffledCards = cardShuffle(CARDS_TYPE);
   let makedCards = "";
 
-  shuffledCards.forEach((image, index) => {
-    makedCards += makeCard(index + 1, image);
+  shuffledCards.forEach(({ id, emoji }) => {
+    makedCards += renderCard(id, emoji);
   });
 
   const board = document.querySelector("#board");
@@ -113,14 +109,16 @@ const initCard = () => {
   injectCardEvent(shuffledCards);
 };
 
-initCard();
+const updateMoveCountText = (currentMoveCount) => {
+  gameMoveCount.textContent = `${currentMoveCount} moves`;
+};
 
-const changeTimerText = (currentTime) => {
+const updateTimerText = (currentTime) => {
   gameTimerText.textContent = `time: ${currentTime} secs`;
 };
 
-// 타이머
-// TO-DO : 화면 표시 안됨
+initCard();
+
 const starGameTimer = () => {
   let timeLeft = GAME_DURATION_SEC;
 
@@ -132,12 +130,12 @@ const starGameTimer = () => {
       return;
     }
     timeLeft -= 1;
-    changeTimerText(timeLeft);
+    updateTimerText(timeLeft);
   }, 1000);
 };
 
 const initGame = () => {
-  changeTimerText(GAME_DURATION_SEC);
+  updateTimerText(GAME_DURATION_SEC);
 };
 
 startbutton.addEventListener("click", () => {
@@ -145,70 +143,66 @@ startbutton.addEventListener("click", () => {
     //stopedGame();
   } else {
     started = true;
-    // 버튼 disabled 처리
     startbutton.disabled = true;
     initGame();
     starGameTimer();
   }
 });
 
-// 메인 기능
-// 카드 두 개를 뒤집고,
-// 카드 뒷면 이미지가 같으면 그대로 두고,
-// 카드 뒷면 이미지가 다르면 다시 원위치 한다.
+const updateMoveCount = () => {
+  moveCount += 1;
+};
 
-// 1. 카드 비교하는 함수 < isCardSame isCardCorrect
-// 2. 틀렸을 때 카드를 다시 원위치로.. <
+const updateShuffledCardInfo = (card1, card2) => {
+  shuffledCards = shuffledCards.map((card) => {
+    if (card1.id === card.id || card2.id === card.id) {
+      return {
+        ...card,
+        isOpened: true,
+      };
+    }
+    return card;
+  });
 
-/**
- * card_1 === card_2 --> correct 함수 호출
- * card_1 !== card_2 --> wrong 함수 호출
- *
- *
- * card_1 = {
- * emoji: '',
- * id: '10' //
- * }
- */
+  console.log(shuffledCards);
+};
 
 const checkCardIsSame = (card1, card2) => {
-  if (card1.emoji === card2.emoji) {
-    console.log(111);
-    // 스코어 + 1 -> correct 함수 호출
-    score += 1;
-    // 상태도 바꿔야 함
+  if (card1.innerText === card2.innerText) {
+    updateShuffledCardInfo(card1, card2);
+    resetSelectedCards();
     return;
   }
 
-  if (card1.emoji !== card2.emoji) {
-    console.log(222);
-    // 다시 카드 뒤집기 -> wrong 함수 호출
-    reverseCard(card_1.id);
-    reverseCard(card_2.id);
-    card_1 = null;
-    card_2 = null;
+  if (card1.innerText !== card2.innerText) {
+    setTimeout(() => {
+      reverseCard(card_1.id);
+      reverseCard(card_2.id);
+      resetSelectedCards();
+    }, 1000);
   }
 };
 
-// targetCard: e.currentTarget.classList (X)
-// id
 const reverseCard = (cardId) => {
-  console.log(cardId); // card-5
   const targetCard = document.querySelector(`#${cardId}`);
 
   targetCard.classList.toggle("card-over");
 };
 
-// 중복 (같은 카드 두 번 클릭), 맞춘 카드 클릭,
 const checkCardCanReverse = (selectCard) => {
-  // true, false
+  const selectCardData = shuffledCards.find(
+    (card) => card.id === selectCard.id
+  );
+
+  if (selectCardData.isOpened) {
+    return false;
+  }
+  if (card_1 && card_2) {
+    return false;
+  }
 
   if (card_1 === null) {
     return true;
-  }
-
-  if (selectCard.status === true) {
-    return false;
   }
 
   if (card_1.id === selectCard.id) {
@@ -217,24 +211,3 @@ const checkCardCanReverse = (selectCard) => {
 
   return true;
 };
-
-/**
- * glonal
- * let card_1 = null;
- * let card_2 = null;
- */
-
-// 카드 뒤집기
-
-// 스코어 카운트
-
-// 게임 시작
-const startGame = () => {};
-
-// ----- 추가 기능 -----
-
-// 게임 리셋
-
-// 난이도
-
-// 음악
