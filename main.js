@@ -7,10 +7,6 @@ import { GAME_DURATION_SEC } from "./constatns.js";
 // 음악
 // 게임 끝 모달 UI
 
-// TODO:
-// 4. 게임 끝 ( alert )
-// 5. 게임 리셋
-
 const CARDS_TYPE = ["🍑", "🍎", "🥝", "🍋", "🍊", "🍌", "🍉", "🍇"];
 
 // querySelector
@@ -24,6 +20,7 @@ let moveCount = 0;
 let card_1 = null;
 let card_2 = null;
 let shuffledCards = [];
+let timer;
 
 const cardShuffle = (cardList) => {
   const cardCopy = [...cardList, ...cardList].map((emoji, index) =>
@@ -62,7 +59,17 @@ const renderCard = (cardId, emoji) => {
   `;
 };
 
-const injectCardEvent = (shuffledCards) => {
+const gameOver = () => {
+  initGame();
+  alert("Game Over");
+};
+
+const gameClear = () => {
+  initGame();
+  alert("Game Clear");
+};
+
+const injectCardEvent = () => {
   const cards = document.querySelectorAll(".card");
 
   cards.forEach((card) => {
@@ -84,6 +91,12 @@ const injectCardEvent = (shuffledCards) => {
           checkCardIsSame(card_1, card_2);
           updateMoveCount();
           updateMoveCountText(moveCount);
+
+          if (shuffledCards.every((card) => card.isOpened)) {
+            setTimeout(() => {
+              gameClear();
+            }, 300);
+          }
         }
       }
     });
@@ -104,9 +117,10 @@ const initCard = () => {
   });
 
   const board = document.querySelector("#board");
+  board.textContent = "";
   board.insertAdjacentHTML("afterbegin", makedCards);
 
-  injectCardEvent(shuffledCards);
+  injectCardEvent();
 };
 
 const updateMoveCountText = (currentMoveCount) => {
@@ -117,35 +131,43 @@ const updateTimerText = (currentTime) => {
   gameTimerText.textContent = `time: ${currentTime} secs`;
 };
 
-initCard();
+const initGameText = () => {
+  updateMoveCountText(0);
+  updateTimerText(GAME_DURATION_SEC);
+};
 
-const starGameTimer = () => {
+const initGame = () => {
+  initCard();
+  initGameText();
+  clearInterval(timer);
+  startbutton.disabled = false;
+};
+
+const startGameTimer = () => {
   let timeLeft = GAME_DURATION_SEC;
 
-  const timer = setInterval(() => {
-    if (timeLeft <= 0) {
+  timer = setInterval(() => {
+    timeLeft -= 1;
+    updateTimerText(timeLeft);
+
+    if (timeLeft === 0) {
       clearInterval(timer);
+      gameOver();
       started = false;
       startbutton.disabled = false;
       return;
     }
-    timeLeft -= 1;
-    updateTimerText(timeLeft);
   }, 1000);
-};
-
-const initGame = () => {
-  updateTimerText(GAME_DURATION_SEC);
 };
 
 startbutton.addEventListener("click", () => {
   if (started) {
     //stopedGame();
   } else {
+    // start된 상태
     started = true;
     startbutton.disabled = true;
-    initGame();
-    starGameTimer();
+    startGameTimer();
   }
 });
 
@@ -163,8 +185,6 @@ const updateShuffledCardInfo = (card1, card2) => {
     }
     return card;
   });
-
-  console.log(shuffledCards);
 };
 
 const checkCardIsSame = (card1, card2) => {
@@ -211,3 +231,5 @@ const checkCardCanReverse = (selectCard) => {
 
   return true;
 };
+
+initGame();
