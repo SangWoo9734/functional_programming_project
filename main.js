@@ -124,11 +124,11 @@ const initCard = () => {
 };
 
 const updateMoveCountText = (currentMoveCount) => {
-  gameMoveCount.textContent = `${currentMoveCount} moves`;
+  gameMoveCount.textContent = `${currentMoveCount} Moves`;
 };
 
 const updateTimerText = (currentTime) => {
-  gameTimerText.textContent = `time: ${currentTime} secs`;
+  gameTimerText.textContent = `Time Left: ${currentTime} secs`;
 };
 
 const initGameText = () => {
@@ -144,17 +144,19 @@ const initGame = () => {
 };
 
 const startGameTimer = () => {
-  let timeLeft = GAME_DURATION_SEC;
+  let timeLeft = GAME_DURATION_SEC; // timer
 
   timer = setInterval(() => {
     timeLeft -= 1;
     updateTimerText(timeLeft);
 
     if (timeLeft === 0) {
-      clearInterval(timer);
-      gameOver();
-      started = false;
-      startbutton.disabled = false;
+      setTimeout(() => {
+        clearInterval(timer);
+        gameOver();
+        started = false;
+        startbutton.disabled = false;
+      }, -1000);
       return;
     }
   }, 1000);
@@ -165,9 +167,9 @@ startbutton.addEventListener("click", () => {
     //stopedGame();
   } else {
     // start된 상태
+    startGameTimer();
     started = true;
     startbutton.disabled = true;
-    startGameTimer();
   }
 });
 
